@@ -38,7 +38,7 @@ The bot requires `OWNER_ID` or `ALLOWED_USER_IDS` unless `PUBLIC_ACCESS=true` is
 Recommended. The default compose file uses the prebuilt GHCR image.
 
 ```bash
-git clone https://github.com/shuijiao1/ip-tools-telegram-bot.git
+git clone https://github.com/shuijiao1/IP-Tools-Telegram-Bot.git
 cd ip-tools-telegram-bot
 cp .env.example .env
 nano .env
@@ -83,14 +83,14 @@ docker compose up -d
 ```bash
 mkdir -p ip-tools-telegram-bot/data ip-tools-telegram-bot/tmp
 cd ip-tools-telegram-bot
-curl -fsSL https://raw.githubusercontent.com/shuijiao1/ip-tools-telegram-bot/main/.env.example -o .env
+curl -fsSL https://raw.githubusercontent.com/shuijiao1/IP-Tools-Telegram-Bot/main/.env.example -o .env
 nano .env
 ```
 
 Pull and run:
 
 ```bash
-docker pull ghcr.io/shuijiao1/ip-tools-telegram-bot:latest
+docker pull ghcr.io/shuijiao1/IP-Tools-Telegram-Bot:latest
 
 docker run -d \
   --name ip-tools-telegram-bot \
@@ -100,7 +100,7 @@ docker run -d \
   --security-opt seccomp=unconfined \
   -v "$PWD/data:/app/data" \
   -v "$PWD/tmp:/tmp/ip-tools-telegram-bot" \
-  ghcr.io/shuijiao1/ip-tools-telegram-bot:latest
+  ghcr.io/shuijiao1/IP-Tools-Telegram-Bot:latest
 ```
 
 ### Manual install
@@ -122,7 +122,7 @@ sudo apt install -y nodejs npm python3 python3-pip python3-cairo libcairo2 librs
 Run:
 
 ```bash
-git clone https://github.com/shuijiao1/ip-tools-telegram-bot.git
+git clone https://github.com/shuijiao1/IP-Tools-Telegram-Bot.git
 cd ip-tools-telegram-bot
 npm install --omit=dev
 npx playwright install chromium --with-deps

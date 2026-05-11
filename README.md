@@ -38,7 +38,7 @@
 推荐这种方式。仓库里的 `docker-compose.yml` 默认使用 GHCR 镜像，不需要本地构建。
 
 ```bash
-git clone https://github.com/shuijiao1/ip-tools-telegram-bot.git
+git clone https://github.com/shuijiao1/IP-Tools-Telegram-Bot.git
 cd ip-tools-telegram-bot
 cp .env.example .env
 nano .env
@@ -85,14 +85,14 @@ docker compose up -d
 ```bash
 mkdir -p ip-tools-telegram-bot/data ip-tools-telegram-bot/tmp
 cd ip-tools-telegram-bot
-curl -fsSL https://raw.githubusercontent.com/shuijiao1/ip-tools-telegram-bot/main/.env.example -o .env
+curl -fsSL https://raw.githubusercontent.com/shuijiao1/IP-Tools-Telegram-Bot/main/.env.example -o .env
 nano .env
 ```
 
 拉取镜像：
 
 ```bash
-docker pull ghcr.io/shuijiao1/ip-tools-telegram-bot:latest
+docker pull ghcr.io/shuijiao1/IP-Tools-Telegram-Bot:latest
 ```
 
 运行：
@@ -106,7 +106,7 @@ docker run -d \
   --security-opt seccomp=unconfined \
   -v "$PWD/data:/app/data" \
   -v "$PWD/tmp:/tmp/ip-tools-telegram-bot" \
-  ghcr.io/shuijiao1/ip-tools-telegram-bot:latest
+  ghcr.io/shuijiao1/IP-Tools-Telegram-Bot:latest
 ```
 
 查看日志：
@@ -124,7 +124,7 @@ docker rm -f ip-tools-telegram-bot
 更新：
 
 ```bash
-docker pull ghcr.io/shuijiao1/ip-tools-telegram-bot:latest
+docker pull ghcr.io/shuijiao1/IP-Tools-Telegram-Bot:latest
 docker rm -f ip-tools-telegram-bot
 # 然后重新执行上面的 docker run 命令
 ```
@@ -150,7 +150,7 @@ sudo apt install -y nodejs npm python3 python3-pip python3-cairo libcairo2 librs
 安装并运行：
 
 ```bash
-git clone https://github.com/shuijiao1/ip-tools-telegram-bot.git
+git clone https://github.com/shuijiao1/IP-Tools-Telegram-Bot.git
 cd ip-tools-telegram-bot
 npm install --omit=dev
 npx playwright install chromium --with-deps
