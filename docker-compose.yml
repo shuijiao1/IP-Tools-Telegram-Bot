@@ -1,0 +1,16 @@
+services:
+  ip-tools-telegram-bot:
+    image: ghcr.io/shuijiao1/ip-tools-telegram-bot:latest
+    container_name: ip-tools-telegram-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATA_DIR: /app/data
+      TMP_DIR: /tmp/ip-tools-telegram-bot
+    volumes:
+      - ./data:/app/data
+      - ./tmp:/tmp/ip-tools-telegram-bot
+    shm_size: "1gb"
+    security_opt:
+      - seccomp=unconfined
