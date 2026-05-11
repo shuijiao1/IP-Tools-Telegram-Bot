@@ -1,50 +1,64 @@
-# IP Tools Telegram Bot 🌐
+# 🌐 IP Tools Telegram Bot
+
+[![Docker Image](https://img.shields.io/badge/ghcr.io-ip--tools--telegram--bot-blue?logo=docker)](https://github.com/shuijiao1/IP-Tools-Telegram-Bot/pkgs/container/ip-tools-telegram-bot)
+[![Build](https://github.com/shuijiao1/IP-Tools-Telegram-Bot/actions/workflows/docker-ghcr.yml/badge.svg)](https://github.com/shuijiao1/IP-Tools-Telegram-Bot/actions/workflows/docker-ghcr.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **中文** | [English](README.en.md)
 
-一个默认白名单模式的 Telegram IP 查询图片 Bot。发送 IPv4 或域名后，可以一键生成：
+**Telegram IP 查询图片机器人：IPPure 官方结果图 + bgp.tools BGP 路由图**
 
-- **IPPure 官方结果图**
-- **bgp.tools BGP 路由图**
+> 私聊发送 IPv4 / 域名，Bot 自动解析并返回两张图：第一张 IPPure，第二张 BGP。  
+> 群聊默认需要 `@BotName` 触发，避免刷屏。默认白名单模式，适合自托管。
 
-适合自托管使用。你需要自己填写 Telegram Bot Token 和允许使用 Bot 的 Telegram 用户 ID。
+---
 
-## 功能
+## 🎯 核心特性
 
-- 支持 IPv4 查询
-- 支持域名查询，自动解析 A 记录为 IPv4
-- IPPure 使用网站官方截图按钮导出的 PNG
-- BGP 图来自 bgp.tools path image
-- 私聊直接发送 IP / 域名即可使用
-- 群聊需要 `@BotName` 后带 IP / 域名，避免打扰
-- 默认白名单模式，默认不公开给所有人使用
+- **IPv4 / 域名查询**：域名自动解析 A 记录为 IPv4。
+- **IPPure 官方图片**：使用 ippure.com 页面自带截图 / 相机按钮导出的官方 PNG，不手工重绘。
+- **BGP 路由图**：获取 bgp.tools path image，方便查看 ASN / 路由可见性。
+- **Telegram 原生发图**：结果以 Telegram 可预览图片发送，不当文件附件。
+- **白名单优先**：默认不公开；必须配置 `OWNER_ID` / `ALLOWED_USER_IDS`，或显式开启 `PUBLIC_ACCESS=true`。
+- **适合 Docker 部署**：镜像已发布到 GHCR，Docker Compose 不需要 `git clone`。
 
-## 命令
+---
 
-- `/start` — 查看简单说明
-- `/help` — 查看用法
+## 🚀 快速开始
 
-## 安装
+先准备：
 
-先准备两样东西：
+1. 到 [@BotFather](https://t.me/BotFather) 创建 Bot，拿到 `BOT_TOKEN`。
+2. 用 [@userinfobot](https://t.me/userinfobot) 或 [@RawDataBot](https://t.me/RawDataBot) 获取你的 Telegram 数字用户 ID。
 
-- 从 [@BotFather](https://t.me/BotFather) 获取 `BOT_TOKEN`
-- 获取你的 Telegram 数字用户 ID，推荐用 [@userinfobot](https://t.me/userinfobot) 或 [@RawDataBot](https://t.me/RawDataBot)
+提供 3 种部署方式，**推荐一键脚本**。
 
-项目默认是白名单模式，至少需要填写 `OWNER_ID` 或 `ALLOWED_USER_IDS`，否则 Bot 会拒绝启动。
-
-### 方式一：Docker Compose
-
-推荐这种方式。仓库里的 `docker-compose.yml` 默认使用 GHCR 镜像，不需要本地构建。
+### 方式一：一键脚本（推荐）
 
 ```bash
-git clone https://github.com/shuijiao1/IP-Tools-Telegram-Bot.git
+bash <(curl -Ls https://raw.githubusercontent.com/shuijiao1/IP-Tools-Telegram-Bot/main/deploy.sh)
+```
+
+脚本会：
+
+1. 显示项目信息，检查 / 引导安装 Docker 与 Docker Compose。
+2. 交互式收集：安装目录、Bot Token、Owner ID、是否公开访问。
+3. 生成 `.env` + `docker-compose.yml`。
+4. 执行 `docker compose pull && docker compose up -d`，并显示运行状态。
+
+### 方式二：Docker Compose（手动，无需 git clone）
+
+```bash
+mkdir -p ip-tools-telegram-bot/data ip-tools-telegram-bot/tmp
 cd ip-tools-telegram-bot
+
+curl -Lo docker-compose.yml https://raw.githubusercontent.com/shuijiao1/IP-Tools-Telegram-Bot/main/docker-compose.yml
+curl -Lo .env.example https://raw.githubusercontent.com/shuijiao1/IP-Tools-Telegram-Bot/main/.env.example
 cp .env.example .env
 nano .env
 ```
 
-编辑 `.env`，至少填写：
+`.env` 至少填写：
 
 ```env
 BOT_TOKEN=123456:your_bot_token_here
@@ -55,49 +69,19 @@ PUBLIC_ACCESS=false
 启动：
 
 ```bash
+docker compose pull
 docker compose up -d
-```
-
-查看日志：
-
-```bash
 docker compose logs -f
 ```
 
-停止：
-
-```bash
-docker compose down
-```
-
-以后更新：
-
-```bash
-git pull
-docker compose pull
-docker compose up -d
-```
-
-如果想从源码本地构建镜像，可以把 `docker-compose.yml` 里的 `image:` 改成 `build: .`，或者直接使用下面的纯 Docker 本地构建方式。
-
-### 方式二：纯 Docker
+### 方式三：Docker 直跑（不用 Compose）
 
 ```bash
 mkdir -p ip-tools-telegram-bot/data ip-tools-telegram-bot/tmp
 cd ip-tools-telegram-bot
-curl -fsSL https://raw.githubusercontent.com/shuijiao1/IP-Tools-Telegram-Bot/main/.env.example -o .env
+curl -Lo .env https://raw.githubusercontent.com/shuijiao1/IP-Tools-Telegram-Bot/main/.env.example
 nano .env
-```
 
-拉取镜像：
-
-```bash
-docker pull ghcr.io/shuijiao1/IP-Tools-Telegram-Bot:latest
-```
-
-运行：
-
-```bash
 docker run -d \
   --name ip-tools-telegram-bot \
   --restart unless-stopped \
@@ -106,62 +90,45 @@ docker run -d \
   --security-opt seccomp=unconfined \
   -v "$PWD/data:/app/data" \
   -v "$PWD/tmp:/tmp/ip-tools-telegram-bot" \
-  ghcr.io/shuijiao1/IP-Tools-Telegram-Bot:latest
+  ghcr.io/shuijiao1/ip-tools-telegram-bot:latest
 ```
 
-查看日志：
+---
 
-```bash
-docker logs -f ip-tools-telegram-bot
+## 💬 使用方式
+
+### 私聊
+
+直接发送：
+
+```text
+1.1.1.1
+example.com
+https://example.com/path
 ```
 
-停止并删除容器：
+### 群聊
 
-```bash
-docker rm -f ip-tools-telegram-bot
+群聊中需要带 Bot 用户名：
+
+```text
+@YourBotName 1.1.1.1
+@YourBotName example.com
 ```
 
-更新：
+Bot 会按顺序发送：
 
-```bash
-docker pull ghcr.io/shuijiao1/IP-Tools-Telegram-Bot:latest
-docker rm -f ip-tools-telegram-bot
-# 然后重新执行上面的 docker run 命令
-```
+1. IPPure 官方结果图
+2. bgp.tools BGP 路由图
 
-### 方式三：手动安装
+### 命令
 
-适合不想用 Docker、愿意自己处理系统依赖的环境。
+- `/start` — 查看简单说明
+- `/help` — 查看用法
 
-需要：
+---
 
-- Node.js 22+
-- Python 3
-- Chromium / Playwright 运行依赖
-- Cairo / librsvg / Noto CJK 字体
-
-Debian / Ubuntu 可以先安装依赖：
-
-```bash
-sudo apt update
-sudo apt install -y nodejs npm python3 python3-pip python3-cairo libcairo2 librsvg2-bin fonts-noto-cjk fonts-dejavu-core ca-certificates
-```
-
-安装并运行：
-
-```bash
-git clone https://github.com/shuijiao1/IP-Tools-Telegram-Bot.git
-cd ip-tools-telegram-bot
-npm install --omit=dev
-npx playwright install chromium --with-deps
-cp .env.example .env
-nano .env
-npm start
-```
-
-如果想长期后台运行，建议配合 `systemd`、`pm2` 或其他进程管理工具。
-
-## 配置说明
+## ⚙️ 配置说明
 
 `.env` 示例：
 
@@ -174,46 +141,80 @@ DATA_DIR=/app/data
 TMP_DIR=/tmp/ip-tools-telegram-bot
 ```
 
-字段说明：
+| 变量 | 是否必填 | 默认值 | 说明 |
+|---|---:|---|---|
+| `BOT_TOKEN` | 是 | - | Telegram Bot Token |
+| `OWNER_ID` | 是* | - | 主要允许用户的 Telegram 数字 ID |
+| `ALLOWED_USER_IDS` | 否 | - | 额外允许用户 ID，多个用英文逗号分隔 |
+| `PUBLIC_ACCESS` | 否 | `false` | 设为 `true` 后允许所有人使用 |
+| `DATA_DIR` | 否 | `/app/data` | BGP 图片缓存目录 |
+| `TMP_DIR` | 否 | `/tmp/ip-tools-telegram-bot` | 临时文件目录 |
 
-- `BOT_TOKEN`：Telegram Bot Token，必填
-- `OWNER_ID`：主要允许用户的 Telegram 数字 ID
-- `ALLOWED_USER_IDS`：额外允许用户 ID，多个用英文逗号分隔
-- `PUBLIC_ACCESS`：设为 `true` 后允许所有人使用；默认 `false`
-- `DATA_DIR`：BGP 图片缓存目录
-- `TMP_DIR`：临时文件目录
+> `OWNER_ID` / `ALLOWED_USER_IDS` 至少填一个；除非你明确设置 `PUBLIC_ACCESS=true`。
 
-## 使用示例
+---
 
-私聊：
+## 🛠 运维
 
-```text
-1.1.1.1
-example.com
-https://example.com/path
-```
-
-群聊：
+所有持久化数据在安装目录下：
 
 ```text
-@YourBotName 1.1.1.1
-@YourBotName example.com
+ip-tools-telegram-bot/
+├── docker-compose.yml
+├── .env
+├── data/        # BGP 缓存等持久化数据
+└── tmp/         # 临时文件
 ```
 
-Bot 会返回按钮：
+常用命令：
 
-- `IPPure 图`
-- `BGP 图`
+```bash
+cd <安装目录>
+docker compose ps                 # 状态
+docker compose logs -f            # 实时日志
+docker compose restart            # 重启
+docker compose down               # 停止并删除容器，保留 data/tmp
+```
 
-点击后生成并发送图片。
+升级：
 
-## 隐私说明
+```bash
+cd <安装目录>
+docker compose pull
+docker compose up -d
+```
 
-- 仓库不包含任何 Bot Token、用户 ID、聊天 ID 或个人配置
-- `.env` 已加入 `.gitignore`，请不要提交真实配置
-- 默认白名单模式，未配置允许用户时会拒绝启动
-- 查询 IP / 域名会访问第三方服务：IPPure、bgp.tools
-- IPPure 临时图片发送后会自动清理；BGP 图片默认缓存到 `DATA_DIR`
+也可以重跑一键脚本并选择升级 / 重装同目录配置。
+
+---
+
+## 🧩 源码运行（开发用）
+
+```bash
+git clone https://github.com/shuijiao1/IP-Tools-Telegram-Bot.git
+cd IP-Tools-Telegram-Bot
+npm install --omit=dev
+npx playwright install chromium --with-deps
+cp .env.example .env
+nano .env
+npm start
+```
+
+语法检查：
+
+```bash
+npm run check
+```
+
+---
+
+## 🔐 隐私说明
+
+- 仓库不包含任何 Bot Token、用户 ID、聊天 ID 或个人配置。
+- `.env` 已加入 `.gitignore`，不要提交真实配置。
+- 默认白名单模式，未配置允许用户时会拒绝启动。
+- 查询 IP / 域名会访问第三方服务：IPPure、bgp.tools。
+- IPPure 临时图片发送后会自动清理；BGP 图片默认缓存到 `DATA_DIR`。
 
 ## License
 

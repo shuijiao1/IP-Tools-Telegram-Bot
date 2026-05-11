@@ -1,6 +1,6 @@
 services:
   ip-tools-telegram-bot:
-    image: ghcr.io/shuijiao1/IP-Tools-Telegram-Bot:latest
+    image: ghcr.io/shuijiao1/ip-tools-telegram-bot:latest
     container_name: ip-tools-telegram-bot
     restart: unless-stopped
     env_file:
