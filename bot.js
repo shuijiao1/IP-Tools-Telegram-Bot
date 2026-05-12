@@ -121,6 +121,15 @@ async function existsNonEmpty(file) {
   }
 }
 
+function isBgpTemporaryNoPath(output) {
+  return /^(PLACEHOLDER|NONE)$/m.test(String(output || ''))
+    || /temporarily returned no path image|prefix not visible in DFZ|no usable BGP path image found|no path data/i.test(String(output || ''));
+}
+
+function bgpRetryMessage() {
+  return 'BGP 图暂时没取到，应该是 bgp.tools 偶发抽风，请再试一次。';
+}
+
 function parseBgpOutput(stdout, target, outdir) {
   const latest = stdout.match(/^LATEST=(.+)$/m)?.[1]?.trim();
   return latest || path.join(outdir, `latest-${safeTarget(target)}.png`);
@@ -131,7 +140,9 @@ async function generateBGP(ip) {
   await mkdir(outdir, { recursive: true });
   const res = await run('python3', [BGP_SCRIPT, '--outdir', outdir, ip], { timeoutMs: 90000 });
   if (res.code !== 0) {
-    throw new Error((res.stdout + '\n' + res.stderr).trim().split('\n').slice(-8).join('\n') || `BGP failed: ${res.code}`);
+    const output = `${res.stdout}\n${res.stderr}`;
+    if (isBgpTemporaryNoPath(output)) throw new Error(bgpRetryMessage());
+    throw new Error(output.trim().split('\n').slice(-8).join('\n') || `BGP failed: ${res.code}`);
   }
   const png = parseBgpOutput(res.stdout, ip, outdir);
   if (!(await existsNonEmpty(png))) throw new Error('BGP 图片生成后未找到文件');

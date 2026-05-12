@@ -198,7 +198,7 @@ def fetch_bgp(ip, domain=None, outdir=OUTDIR):
         print(f'OK\nTARGET={domain or ip}\nIP={ip}\nPREFIX={pfx}\nPNG={png}\nLATEST={latest}\nURL=https://bgp.tools/prefix/{pfx}')
         return 0
     if ph:
-        print(f'PLACEHOLDER\nTARGET={domain or ip}\nIP={ip}\nPREFIX={ph}\nURL=https://bgp.tools/prefix/{ph}\nREASON=prefix not visible in DFZ or no path data')
+        print(f'PLACEHOLDER\nTARGET={domain or ip}\nIP={ip}\nPREFIX={ph}\nURL=https://bgp.tools/prefix/{ph}\nREASON=bgp.tools temporarily returned no path image; please retry once')
         return 2
     pfx=str(prefixes(ip)[0])
     print(f'NONE\nTARGET={domain or ip}\nIP={ip}\nPREFIX={pfx}\nURL=https://bgp.tools/prefix/{pfx}\nREASON=no usable BGP path image found')
