@@ -36,7 +36,7 @@
 ### 方式一：一键脚本（推荐）
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/shuijiao1/IP-Tools-Telegram-Bot/main/deploy.sh)
+bash <(curl -Ls https://github.com/shuijiao1/IP-Tools-Telegram-Bot/releases/latest/download/deploy.sh)
 ```
 
 脚本会：
@@ -52,8 +52,8 @@ bash <(curl -Ls https://raw.githubusercontent.com/shuijiao1/IP-Tools-Telegram-Bo
 mkdir -p ip-tools-telegram-bot/data ip-tools-telegram-bot/tmp
 cd ip-tools-telegram-bot
 
-curl -Lo docker-compose.yml https://raw.githubusercontent.com/shuijiao1/IP-Tools-Telegram-Bot/main/docker-compose.yml
-curl -Lo .env.example https://raw.githubusercontent.com/shuijiao1/IP-Tools-Telegram-Bot/main/.env.example
+curl -Lo docker-compose.yml https://github.com/shuijiao1/IP-Tools-Telegram-Bot/releases/latest/download/docker-compose.yml
+curl -Lo .env.example https://github.com/shuijiao1/IP-Tools-Telegram-Bot/releases/latest/download/default.env.example
 cp .env.example .env
 nano .env
 ```
@@ -79,7 +79,7 @@ docker compose logs -f
 ```bash
 mkdir -p ip-tools-telegram-bot/data ip-tools-telegram-bot/tmp
 cd ip-tools-telegram-bot
-curl -Lo .env https://raw.githubusercontent.com/shuijiao1/IP-Tools-Telegram-Bot/main/.env.example
+curl -Lo .env https://github.com/shuijiao1/IP-Tools-Telegram-Bot/releases/latest/download/default.env.example
 nano .env
 
 docker run -d \
