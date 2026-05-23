@@ -39,13 +39,6 @@
 bash <(curl -Ls https://github.com/shuijiao1/IP-Tools-Telegram-Bot/releases/latest/download/deploy.sh)
 ```
 
-脚本会：
-
-1. 显示项目信息，检查 / 引导安装 Docker 与 Docker Compose。
-2. 交互式收集：安装目录、Bot Token、Owner ID、是否公开访问。
-3. 生成 `.env` + `docker-compose.yml`。
-4. 执行 `docker compose pull && docker compose up -d`，并显示运行状态。
-
 ### 方式二：Docker Compose（手动，无需 git clone）
 
 ```bash
@@ -187,18 +180,6 @@ docker compose up -d
 也可以重跑一键脚本并选择升级 / 重装同目录配置。
 
 ---
-
-## ⚙️ 版本与发布
-
-- 当前版本：`v0.1.4`
-- 更新记录见 [`CHANGELOG.md`](CHANGELOG.md)
-- Docker 镜像会发布 `latest`、`v0.1.4` 和 commit sha 标签
-- GitHub Release 会根据 `CHANGELOG.md` 自动生成说明
-- 维护者发布新版本可使用：
-
-```bash
-./release.sh <version> "更新说明"
-```
 
 ---
 

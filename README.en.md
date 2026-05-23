@@ -174,15 +174,3 @@ npm run check
 MIT
 
 ---
-
-## ⚙️ Versioning and Releases
-
-- Current version: `v0.1.4`
-- Changelog: [`CHANGELOG.md`](CHANGELOG.md)
-- Docker images are published as `latest`, `v0.1.4`, and commit sha tags
-- GitHub Releases are generated from `CHANGELOG.md`
-- Maintainers can publish a new version with:
-
-```bash
-./release.sh <version> "release notes"
-```
