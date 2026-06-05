@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const sharp = require('sharp');
+import sharp from 'sharp';
 const [,, input, output] = process.argv;
 if (!input || !output) {
   console.error('usage: svg_to_png.js input.svg output.png');

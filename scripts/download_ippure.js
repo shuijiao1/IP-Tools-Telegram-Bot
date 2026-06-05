@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
-const { chromium } = require('playwright');
+import fs from 'fs';
+import path from 'path';
+import { chromium } from 'playwright';
 
 function arg(name, fallback = '') {
   const i = process.argv.indexOf(`--${name}`);
