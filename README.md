@@ -6,7 +6,7 @@
 
 **中文** | [English](README.en.md)
 
-**Telegram IP 查询图片机器人：IPPure 官方结果图 + bgp.tools BGP 路由图**
+**Telegram IP 查询机器人：IPPure 官方结果图 + bgp.tools BGP 路由图 + IP 文本信息查询**
 
 > 私聊发送 IPv4 / 域名，Bot 自动解析并返回两张图：第一张 IPPure，第二张 BGP。  
 > 群聊默认需要 `@BotName` 触发，避免刷屏。默认白名单模式，适合自托管。
@@ -16,6 +16,7 @@
 ## 🎯 核心特性
 
 - **IPv4 / 域名查询**：域名自动解析 A 记录为 IPv4。
+- **IP 文本信息**：新增 `/ip` 命令，可查询地理位置、ISP、组织、AS、时区、代理/数据中心标记。
 - **IPPure 官方图片**：使用 ippure.com 页面自带截图 / 相机按钮导出的官方 PNG，不手工重绘。
 - **BGP 路由图**：获取 bgp.tools path image，方便查看 ASN / 路由可见性。
 - **Telegram 原生发图**：结果以 Telegram 可预览图片发送，不当文件附件。
@@ -109,15 +110,17 @@ https://example.com/path
 @YourBotName example.com
 ```
 
-Bot 会按顺序发送：
+Bot 会提供按钮，可选择：
 
 1. IPPure 官方结果图
 2. bgp.tools BGP 路由图
+3. IP 文本信息
 
 ### 命令
 
 - `/start` — 查看简单说明
 - `/help` — 查看用法
+- `/ip <IP或域名>` — 查询文本 IP 信息；也可回复包含 IP/域名的消息后发送 `/ip`
 
 ---
 

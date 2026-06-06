@@ -32,6 +32,15 @@ const bot = new Telegraf(TOKEN, { handlerTimeout: 10 * 60 * 1000 });
 const IPV4_RE = /(?:^|\D)((?:\d{1,3}\.){3}\d{1,3})(?:\D|$)/;
 const DOMAIN_RE = /^(?:https?:\/\/)?(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,}(?::\d+)?(?:[\/?#].*)?$/;
 
+function htmlEscape(text) {
+  return String(text ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function isAllowed(ctx) {
   if (PUBLIC_ACCESS) return true;
   return ALLOWED_USER_IDS.has(String(ctx.from?.id || ''));
@@ -87,6 +96,101 @@ async function resolveToIpv4(target) {
   const res = await lookup(host, { family: 4 });
   if (!res?.address || !isIpv4(res.address)) throw new Error('域名没有解析到 IPv4。');
   return res.address;
+}
+
+function extractTargetFromText(text) {
+  const input = String(text || '').trim();
+  if (!input) return '';
+  const ip = input.match(IPV4_RE)?.[1];
+  if (ip && isIpv4(ip)) return ip;
+  const domain = input.match(/\b(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,}\b/)?.[0];
+  if (domain) return cleanTarget(domain);
+  return cleanTarget(input);
+}
+
+function getCommandArg(ctx) {
+  const text = ctx.message?.text || '';
+  return text.replace(/^\/[^\s@]+(?:@\S+)?\s*/i, '').trim();
+}
+
+function getReplyText(ctx) {
+  return ctx.message?.reply_to_message?.text
+    || ctx.message?.reply_to_message?.caption
+    || '';
+}
+
+async function getIpInfo(query) {
+  const target = String(query || '').trim();
+  if (!target) throw new Error('请提供有效的 IP 地址或域名。');
+  const apiUrl = `http://ip-api.com/json/${encodeURIComponent(target)}?lang=zh-CN&fields=status,message,country,regionName,city,isp,org,as,query,timezone,proxy,hosting`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const response = await fetch(apiUrl, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'IP-Tools-Telegram-Bot/0.1' },
+    });
+    if (!response.ok) throw new Error(`API 请求失败，HTTP ${response.status}`);
+    const data = await response.json();
+    if (data.status === 'fail') throw new Error(data.message || '查询失败，请检查 IP 地址或域名是否正确。');
+    return data;
+  } catch (err) {
+    if (err?.name === 'AbortError') throw new Error('请求超时，请稍后重试。');
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function formatIpInfo(data, originalTarget = '') {
+  const country = data.country || 'N/A';
+  const region = data.regionName || 'N/A';
+  const city = data.city || 'N/A';
+  const isp = data.isp || 'N/A';
+  const org = data.org || 'N/A';
+  const asInfo = data.as || 'N/A';
+  const ipAddress = data.query || originalTarget || 'N/A';
+  const lines = [];
+  if (data.proxy) lines.push('⚠️ 此 IP 可能为代理 IP');
+  if (data.hosting) lines.push('⚠️ 此 IP 可能为数据中心 IP');
+  if (lines.length) lines.push('');
+  lines.push('🌍 <b>IP/域名查询结果</b>');
+  lines.push('');
+  if (originalTarget && originalTarget !== ipAddress) lines.push(`<b>🔎 查询输入:</b> <code>${htmlEscape(originalTarget)}</code>`);
+  lines.push(`<b>🔍 查询目标:</b> <code>${htmlEscape(ipAddress)}</code>`);
+  lines.push(`<b>📍 地理位置:</b> ${htmlEscape(country)} - ${htmlEscape(region)} - ${htmlEscape(city)}`);
+  lines.push(`<b>🏢 ISP:</b> ${htmlEscape(isp)}`);
+  lines.push(`<b>🏦 组织:</b> ${htmlEscape(org)}`);
+  lines.push(`<b>🔢 AS号:</b> <code>${htmlEscape(asInfo)}</code>`);
+  if (data.timezone) lines.push(`<b>⏰ 时区:</b> ${htmlEscape(data.timezone)}`);
+  const asMatch = String(asInfo).match(/^AS(\d+)/);
+  if (asMatch) lines.push('', `https://bgp.he.net/AS${asMatch[1]}`);
+  return lines.join('\n');
+}
+
+async function replyIpInfo(ctx, query) {
+  const target = extractTargetFromText(query);
+  if (!target) {
+    await ctx.reply([
+      '📍 IP 信息查询用法：',
+      '/ip 8.8.8.8',
+      '/ip example.com',
+      '也可以回复包含 IP/域名的消息后发送 /ip',
+    ].join('\n'));
+    return;
+  }
+  const status = await ctx.reply(`🔍 正在查询：${target}`);
+  try {
+    const data = await getIpInfo(target);
+    await ctx.telegram.editMessageText(ctx.chat.id, status.message_id, undefined, formatIpInfo(data, target), {
+      parse_mode: 'HTML',
+      link_preview_options: { is_disabled: false },
+    });
+  } catch (err) {
+    await ctx.telegram.editMessageText(ctx.chat.id, status.message_id, undefined, `❌ 查询失败：${String(err?.message || err).slice(0, 900)}`).catch(async () => {
+      await ctx.reply(`❌ 查询失败：${String(err?.message || err).slice(0, 900)}`);
+    });
+  }
 }
 
 function run(cmd, args, opts = {}) {
@@ -182,12 +286,13 @@ function choiceKeyboard(ip) {
       Markup.button.callback('IPPure 图', `ippure:${ip}`),
       Markup.button.callback('BGP 图', `bgp:${ip}`),
     ],
+    [Markup.button.callback('IP 信息', `ipinfo:${ip}`)],
   ]);
 }
 
 bot.start(async (ctx) => {
   if (!await guard(ctx)) return;
-  await ctx.reply('发 IPv4 或域名，我会生成 IPPure 或 BGP 图。群里请 @我 再带上 IP/域名。');
+  await ctx.reply('发 IPv4 或域名，我会生成 IPPure / BGP 图，也可以用 /ip 查询文本信息。群里请 @我 再带上 IP/域名。');
 });
 
 bot.help(async (ctx) => {
@@ -196,10 +301,17 @@ bot.help(async (ctx) => {
     '用法：',
     '1. 私聊直接发送 IPv4 或域名',
     '2. 群聊 @BotName 1.1.1.1',
-    '3. 选择 IPPure 图或 BGP 图',
+    '3. 选择 IPPure 图、BGP 图或 IP 信息',
+    '4. /ip 8.8.8.8 可直接查询文本信息',
     '',
     '默认白名单模式；公开使用请设置 PUBLIC_ACCESS=true。',
   ].join('\n'));
+});
+
+bot.command('ip', async (ctx) => {
+  if (!await guard(ctx)) return;
+  const query = getCommandArg(ctx) || getReplyText(ctx);
+  await replyIpInfo(ctx, query);
 });
 
 bot.on('text', async (ctx) => {
@@ -249,6 +361,25 @@ bot.action(/^ippure:((?:\d{1,3}\.){3}\d{1,3})$/, async (ctx) => {
 
 bot.action(/^bgp:((?:\d{1,3}\.){3}\d{1,3})$/, async (ctx) => {
   await handleImageChoice(ctx, 'bgp', ctx.match[1]);
+});
+
+bot.action(/^ipinfo:((?:\d{1,3}\.){3}\d{1,3})$/, async (ctx) => {
+  if (!await guard(ctx)) return;
+  const ip = ctx.match[1];
+  if (!isIpv4(ip)) {
+    await ctx.answerCbQuery('无效 IPv4');
+    return;
+  }
+  await ctx.answerCbQuery('正在查询…');
+  try {
+    const data = await getIpInfo(ip);
+    await ctx.reply(formatIpInfo(data, ip), {
+      parse_mode: 'HTML',
+      link_preview_options: { is_disabled: false },
+    });
+  } catch (err) {
+    await ctx.reply(`❌ 查询失败：${String(err?.message || err).slice(0, 900)}`);
+  }
 });
 
 bot.catch((err) => {

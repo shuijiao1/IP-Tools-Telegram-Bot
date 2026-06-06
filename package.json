@@ -1,6 +1,6 @@
 {
   "name": "ip-tools-telegram-bot",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Telegram IP 查询图片机器人：IPPure + BGP 路由图",
   "type": "module",
   "main": "bot.js",
