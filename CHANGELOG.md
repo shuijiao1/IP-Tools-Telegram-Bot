@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.6] - 2026-06-06
+
+- 补齐上次发布后的版本号，确保本地源码、GitHub Release 和 Docker 镜像版本一致。
+
 ## [0.1.5] - 2026-05-20
 
 - 补充 SECURITY 安全说明和 Issue 模板，并完善 Release 附件。

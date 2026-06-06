@@ -38,8 +38,7 @@ from pathlib import Path
 version, notes = sys.argv[1], sys.argv[2]
 root = Path('.')
 if (root / 'version.txt').exists():
-    (root / 'version.txt').write_text(version + '
-')
+    (root / 'version.txt').write_text(version + '\n')
 for path in root.glob('*.sh'):
     text = path.read_text()
     text = re.sub(r'^(VERSION=")[0-9]+\.[0-9]+\.[0-9]+(".*)$', rf'\g<1>{version}', text, flags=re.M)
@@ -52,8 +51,7 @@ for name in ['package.json', 'package-lock.json']:
         data['version'] = version
         if name == 'package-lock.json' and 'packages' in data and '' in data['packages']:
             data['packages']['']['version'] = version
-        p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '
-')
+        p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n')
 bot = root / 'telegram-bot' / 'bot.py'
 if bot.exists():
     text = bot.read_text()
@@ -65,22 +63,14 @@ if env.exists():
     text = re.sub(r'^GUKO_VERSION=.*$', f'GUKO_VERSION={version}', text, flags=re.M)
     env.write_text(text)
 changelog = root / 'CHANGELOG.md'
-entry = f"## [{version}] - {datetime.date.today().isoformat()}
-
-- {notes}
-
-"
+entry = f"## [{version}] - {datetime.date.today().isoformat()}\n\n- {notes}\n\n"
 if changelog.exists():
     text = changelog.read_text()
     if f'## [{version}]' not in text:
-        text = re.sub(r'(# Changelog
-
-)', r'' + entry, text, count=1)
+        text = re.sub(r'(# Changelog\n\n)', r'' + entry, text, count=1)
     changelog.write_text(text)
 else:
-    changelog.write_text('# Changelog
-
-' + entry)
+    changelog.write_text('# Changelog\n\n' + entry)
 PYHELP
 
 git add -A
